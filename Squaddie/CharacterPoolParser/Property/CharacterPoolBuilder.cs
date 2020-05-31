@@ -6,12 +6,12 @@ namespace Squaddie
 {
     internal class CharacterPoolBuilder
     {
-        private CharacterPool m_pool;
-        private BinaryPoolReader m_binFile;
+        private CharacterPool pool;
+        private BinaryPoolReader binaryPoolReader;
 
         public CharacterPoolBuilder()
         {
-            m_pool = new CharacterPool();
+            pool = new CharacterPool();
         }
 
         public CharacterPool Load(string filepath)
@@ -24,12 +24,12 @@ namespace Squaddie
             }
             else
             {
-                m_binFile = new BinaryPoolReader(file);
+                binaryPoolReader = new BinaryPoolReader(file);
                 VerifyHeader();
                 ReadCharacters();
             }
 
-            return m_pool;
+            return pool;
         }
 
         public void Save(CharacterPool pool)
@@ -59,12 +59,12 @@ namespace Squaddie
         private void ReadCharacters()
         {
             //int amountOfCharacters = m_binFile.ReadInt();
-            int amountOfCharacters = m_binFile.ReadInt();
+            int amountOfCharacters = binaryPoolReader.ReadInt();
 
             for (int index = 0; index < amountOfCharacters; index++)
             {
 
-                m_pool.Add(ReadCharacter());
+                pool.Add(ReadCharacter());
             }
 
         }
@@ -74,7 +74,7 @@ namespace Squaddie
             PropertyFactory factory = new PropertyFactory();
             Character character = new Character();
 
-            IProperty property = factory.ReadProperty(ref m_binFile);
+            IProperty property = factory.ReadProperty(ref binaryPoolReader);
 
             if (property == null)
             {
@@ -84,7 +84,7 @@ namespace Squaddie
             while (property.Name != "None")
             {
                 character.Add(property);
-                property = factory.ReadProperty(ref m_binFile);
+                property = factory.ReadProperty(ref binaryPoolReader);
 
                 if (property == null)
                 {
@@ -99,7 +99,7 @@ namespace Squaddie
         {
             //Verify Magic Number
             const int MagicNumber = -1;
-            if (m_binFile.ReadInt() != MagicNumber)
+            if (binaryPoolReader.ReadInt() != MagicNumber)
             {
                 throw new Exception("Incorrect Header: Unexpected Magic Number!");
             }
@@ -107,24 +107,24 @@ namespace Squaddie
             //Verify file properties
             PropertyFactory factory = new PropertyFactory();
 
-            if (factory.ReadProperty(ref m_binFile).Name != "CharacterPool")
+            if (factory.ReadProperty(ref binaryPoolReader).Name != "CharacterPool")
             {
                 throw new Exception("Incorrect Header: Did Not Read Expected Property CharacterPool!");
             }
 
-            IProperty poolFileName = factory.ReadProperty(ref m_binFile);
+            IProperty poolFileName = factory.ReadProperty(ref binaryPoolReader);
             if (poolFileName.Name == "PoolFileName")
             {
                 //xcom has some issues if you change this from the format that it actually expects
                 string readName = (poolFileName).Value;
-                m_pool.Name = (readName.Substring(25, readName.Length - 29)); //we extract the actual filename from the filepath because we want to enable the possibility of renaming it
+                pool.Name = (readName.Substring(25, readName.Length - 29)); //we extract the actual filename from the filepath because we want to enable the possibility of renaming it
             }
             else
             {
                 throw new Exception("Incorrect Header: Did Not Read Expected Property PoolFileName!");
             }
 
-            if (factory.ReadProperty(ref m_binFile).Name != "None")
+            if (factory.ReadProperty(ref binaryPoolReader).Name != "None")
             {
                 throw new Exception("Incorrect Header: Did Not Read Expected Property None!");
             }
