@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Squaddie.Properties;
+using System;
 using System.Collections.Generic;
 
 namespace Squaddie
 {
-    public class Character : List<IProperty>
+    public sealed class Character : List<IProperty>
     {
         public Character()
         {
@@ -76,7 +77,6 @@ namespace Squaddie
             Add(new Property("AllowedTypeDarkVIP", "BoolProperty", false));
             Add(new Property("PoolTimestamp", "StrProperty", "February 5, 2016 - 00:01"));
             Add(new Property("BackgroundText", "StrProperty", "Created using the Squaddie Character Pool Parser."));
-
         }
 
         public void AmendAppearance(string propertyName, dynamic newValue)
@@ -95,7 +95,7 @@ namespace Squaddie
         {
             IProperty prop = Find(x => x.Name == propertyName);
 
-            if(prop == null)
+            if (prop == null)
             {
                 throw new Exception(string.Format("Property Amend Error: Property with name {0} could not be found", propertyName));
             }

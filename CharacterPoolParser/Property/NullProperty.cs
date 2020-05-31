@@ -1,15 +1,12 @@
 ﻿using System;
 
-namespace Squaddie
+namespace Squaddie.Properties
 {
     internal class NullProperty : IProperty
     {
         public string Name
         {
-            get
-            {
-                return "None";
-            }
+            get => "None";
         }
 
         public string Type

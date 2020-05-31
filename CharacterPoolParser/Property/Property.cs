@@ -1,36 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Squaddie
+﻿namespace Squaddie.Properties
 {
     internal class Property : IProperty
     {
-        private string m_name;
-        private string m_type;
-        private dynamic m_data;
+        private string name;
+        private string type;
+        private dynamic data;
 
         public Property(string name, string type, dynamic value)
         {
-            m_name = name;
-            m_type = type;
-            m_data = value;
+            this.name = name;
+            this.type = type;
+            data = value;
         }
 
         public Property(Property prop)
         {
-            m_name = prop.Name;
-            m_type = prop.Type;
-            m_data = prop.Value;
+            name = prop.Name;
+            type = prop.Type;
+            data = prop.Value;
         }
 
         public string Type
         {
             get
             {
-                return m_type;
+                return type;
             }
         }
 
@@ -38,7 +32,7 @@ namespace Squaddie
         {
             get
             {
-                return m_name;
+                return name;
             }
         }
 
@@ -46,11 +40,11 @@ namespace Squaddie
         {
             get
             {
-                return m_data;
+                return data;
             }
             set
             {
-                m_data = value;
+                data = value;
             }
         }
     }

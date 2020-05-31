@@ -1,4 +1,4 @@
-﻿namespace Squaddie
+﻿namespace Squaddie.Properties
 {
     public interface IProperty
     {

@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Squaddie.Properties;
 
-namespace Squaddie
+namespace Squaddie.Serialization
 {
-    internal class CharacterPoolBuilder
+    public sealed class CharacterPoolBinary
     {
-        private CharacterPool pool;
         private BinaryPoolReader binaryPoolReader;
 
-        public CharacterPoolBuilder()
+        public CharacterPool LoadFromFile(string filepath)
         {
-            pool = new CharacterPool();
-        }
-
-        public CharacterPool Load(string filepath)
-        {
+            CharacterPool pool = new CharacterPool();
             byte[] file = File.ReadAllBytes(filepath);
 
             if (file == null)
@@ -25,24 +21,58 @@ namespace Squaddie
             else
             {
                 binaryPoolReader = new BinaryPoolReader(file);
-                VerifyHeader();
-                ReadCharacters();
+                VerifyHeader(pool);
+                ReadCharacters(pool);
             }
 
             return pool;
         }
 
-        public void Save(CharacterPool pool)
+        public void SaveToFile(string filepath, CharacterPool pool)
         {
             PropertyFactory factory = new PropertyFactory();
             List<byte> data = new List<byte>();
 
-            //Create the Header
-            data.AddRange(StructureReading.ByteInt(-1)); //Magic Number, -1
+            string filename = Path.GetFileName(filepath);
+
+            // Create the Header
+            // This is magic number, it isn't used as far as we know
+            data.AddRange(ByteConversionUtility.ByteInt(-1));
             data.AddRange(factory.ByteProperty(factory.CreateProperty("CharacterPool", "ArrayProperty", pool.Count)));
-            data.AddRange(factory.ByteProperty(factory.CreateProperty("PoolFileName", "StrProperty", string.Format("CharacterPool\\Importable\\{0}.bin", pool.Name))));
+            // XCOM 2 expects that the filename in the data is the same as the actual filename
+            data.AddRange(factory.ByteProperty(factory.CreateProperty("PoolFileName", "StrProperty", string.Format("CharacterPool\\Importable\\{0}", filename))));
             data.AddRange(factory.ByteProperty(factory.CreateProperty("None", "None", null)));
-            data.AddRange(StructureReading.ByteInt(pool.Count)); //character count... again
+            // The character count is placed here again
+            data.AddRange(ByteConversionUtility.ByteInt(pool.Count));
+
+            foreach (Character character in pool)
+            {
+                foreach (IProperty characterProperty in character)
+                {
+                    data.AddRange(factory.ByteProperty(characterProperty));
+                }
+                data.AddRange(factory.ByteProperty(factory.CreateProperty("None", "None", null)));
+            }
+
+            File.WriteAllBytes(filepath, data.ToArray());
+        }
+
+        public void SaveInDirectory(string directoryPath, CharacterPool pool)
+        {
+            PropertyFactory factory = new PropertyFactory();
+            List<byte> data = new List<byte>();
+
+            string filename = pool.Name + ".bin";
+
+            // Create the Header
+            // This is magic number, it isn't used as far as we know
+            data.AddRange(ByteConversionUtility.ByteInt(-1));
+            data.AddRange(factory.ByteProperty(factory.CreateProperty("CharacterPool", "ArrayProperty", pool.Count)));
+            // XCOM 2 expects that the filename in the data is the same as the actual filename
+            data.AddRange(factory.ByteProperty(factory.CreateProperty("PoolFileName", "StrProperty", string.Format("CharacterPool\\Importable\\{0}", filename))));
+            data.AddRange(factory.ByteProperty(factory.CreateProperty("None", "None", null)));
+            // The character count is placed here again
+            data.AddRange(ByteConversionUtility.ByteInt(pool.Count));
 
             foreach (Character guy in pool)
             {
@@ -53,20 +83,17 @@ namespace Squaddie
                 data.AddRange(factory.ByteProperty(factory.CreateProperty("None", "None", null)));
             }
 
-            File.WriteAllBytes(pool.Name + ".bin", data.ToArray());
+            File.WriteAllBytes(Path.Combine(directoryPath, filename), data.ToArray());
         }
 
-        private void ReadCharacters()
+        private void ReadCharacters(CharacterPool pool)
         {
-            //int amountOfCharacters = m_binFile.ReadInt();
             int amountOfCharacters = binaryPoolReader.ReadInt();
 
             for (int index = 0; index < amountOfCharacters; index++)
             {
-
                 pool.Add(ReadCharacter());
             }
-
         }
 
         private Character ReadCharacter()
@@ -78,7 +105,7 @@ namespace Squaddie
 
             if (property == null)
             {
-                throw new Exception("PROPERTY IS NULL;");
+                throw new Exception("Character property was null");
             }
 
             while (property.Name != "None")
@@ -88,14 +115,14 @@ namespace Squaddie
 
                 if (property == null)
                 {
-                    throw new Exception("ads");
+                    throw new Exception("Character property was null");
                 }
             }
 
             return character;
         }
 
-        public void VerifyHeader()
+        private void VerifyHeader(CharacterPool pool)
         {
             //Verify Magic Number
             const int MagicNumber = -1;
@@ -117,7 +144,8 @@ namespace Squaddie
             {
                 //xcom has some issues if you change this from the format that it actually expects
                 string readName = (poolFileName).Value;
-                pool.Name = (readName.Substring(25, readName.Length - 29)); //we extract the actual filename from the filepath because we want to enable the possibility of renaming it
+                //we extract the actual filename from the filepath because we want to enable the possibility of renaming it
+                pool.Name = (readName.Substring(25, readName.Length - 29)); 
             }
             else
             {

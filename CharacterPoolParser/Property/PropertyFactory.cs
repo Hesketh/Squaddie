@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
+using Squaddie.Serialization;
 
-namespace Squaddie
+namespace Squaddie.Properties
 {
     internal class PropertyFactory
     {
-        public PropertyFactory() {}
+        public PropertyFactory() { }
 
         public IProperty CreateProperty(string name, string type, dynamic data)
         {
@@ -38,20 +37,20 @@ namespace Squaddie
 
         public byte[] ByteProperty(IProperty property)
         {
+            Console.WriteLine($"\t\tByting Property {property.Name}");
             List<byte> data = new List<byte>();
 
-            data.AddRange(StructureReading.ByteString(property.Name));
-            data.AddRange(StructureReading.BytePadding());
+            data.AddRange(ByteConversionUtility.ByteString(property.Name));
+            data.AddRange(ByteConversionUtility.BytePadding());
 
             //None property special case
             if (property.Name == "None")
             {
-                //data.AddRange(StructureReading.BytePadding());
                 return data.ToArray();
             }
 
-            data.AddRange(StructureReading.ByteString(property.Type));
-            data.AddRange(StructureReading.BytePadding());
+            data.AddRange(ByteConversionUtility.ByteString(property.Type));
+            data.AddRange(ByteConversionUtility.BytePadding());
 
             int size = -1;
             List<byte> propertyData = new List<byte>();
@@ -59,20 +58,21 @@ namespace Squaddie
             {
                 case "ArrayProperty":
                 case "IntProperty":
-                    propertyData.AddRange(StructureReading.ByteInt(((property)).Value));
+                    propertyData.AddRange(ByteConversionUtility.ByteInt(((property)).Value));
                     size = propertyData.Count;
                     break;
                 case "BoolProperty":
                     propertyData.AddRange(BitConverter.GetBytes(((property)).Value));
-                    size = 0;   //The property on disk for a bool property is said to have a size of 0, it actually has a size of 1
+                    //The property on disk for a bool property has a size of 1 but the property falsely claims 0
+                    size = 0;   
                     break;
                 case "NameProperty":
-                    propertyData.AddRange(StructureReading.ByteString(((property)).Value));
-                    propertyData.AddRange(StructureReading.BytePadding());
+                    propertyData.AddRange(ByteConversionUtility.ByteString(((property)).Value));
+                    propertyData.AddRange(ByteConversionUtility.BytePadding());
                     size = propertyData.Count;
                     break;
                 case "StrProperty":
-                    propertyData.AddRange(StructureReading.ByteString(((property)).Value));
+                    propertyData.AddRange(ByteConversionUtility.ByteString(((property)).Value));
                     size = propertyData.Count;
                     break;
                 case "StructProperty":
@@ -87,17 +87,17 @@ namespace Squaddie
 
             if (size < 0)
             {
-                throw new Exception("Size is 0");
+                throw new Exception("Size is less than 0");
             }
 
-            data.AddRange(StructureReading.ByteInt(size));
-            data.AddRange(StructureReading.BytePadding());
+            data.AddRange(ByteConversionUtility.ByteInt(size));
+            data.AddRange(ByteConversionUtility.BytePadding());
 
             if (property.Type == "StructProperty")
             {
                 //A struct property has an extra string and integer between the size and the data, irrelevant.
-                data.AddRange(StructureReading.ByteString("TAppearance"));
-                data.AddRange(StructureReading.BytePadding());
+                data.AddRange(ByteConversionUtility.ByteString("TAppearance"));
+                data.AddRange(ByteConversionUtility.BytePadding());
             }
 
             data.AddRange(propertyData);
@@ -144,22 +144,24 @@ namespace Squaddie
                         property = new Property(name, type, ReadPropertiesWithinStruct(binFile.ReadBytes(size)));
                         break;
                     default:
-                        throw new Exception("Property Creation Error: Cannot make property named " + name + " and of type " + type + ".");
+                        // Assume that invalid properties are supposed to be spaces
+                        property = new NullProperty();
+                        break;
                 }
             }
             else
             {
                 property = new NullProperty();
             }
+
+            Console.WriteLine($"\t\tUnbit Property {property.Name}");
             return property;
         }
 
         private List<IProperty> ReadPropertiesWithinStruct(byte[] raw)
         {
             List<IProperty> properties = new List<IProperty>();
-
             BinaryPoolReader binFile = new BinaryPoolReader(raw);
-            //PropertyFactory factory = new PropertyFactory();
 
             IProperty property = ReadProperty(ref binFile);
             while (property.Name != "None")
