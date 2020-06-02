@@ -1,7 +1,38 @@
 # Squaddie
 
-A personal issue I had with XCOM 2 was that I absolutely loved seeing people I personally knew, whether they be scientist who were little more than names on a spreadsheet to the actualy soldiers that I controlled and bonded with each misssion. XCOM 2 was brillaint in allowing this to be possible through their character pool system which allowed you to make units before starting a save game and then have them naturally appear throughout the course of a campaign.
+A huge selling point for XCOM 2 was their Character Pool system. Using it, characters I had created could naturally appear as if one of their randomly generated characters throughout a campaign. I found great joy in filling a character pool full of people I knew, so that I could be rescuing my brother who is a scientist in one campaign, to seeing myself turn up as a captured prisoner to rescue. This system is not without its flaws however, the UI to create a character for the character pool is full of animations, transitions and other UI features that just slow everything down enough to be a chore for mass character creation. That is where Squaddie comes in.
 
-However, there was a major issue I had with their implementation. The Interface for making a new character, customising them and changing their name was so slow and full of animations that just made making a huge quantity of characters a far too time intensive task. Squaddie is a utility that reads the native Character Pool binary format and also writes to the same format. Using it you can quickly (for example) fetch a large list of names from your social media site of choice and then generate a bunch of unique characters with specific names.
+Squaddie is a library to load the native Character Pool binary format into a C# structure for editing and to compliment this I also added the ability to re-serialize the structure as a JSON file.
 
-The project initially was going to receive a graphical user interface and a proper amount of documentation. However, before the release of XCOM 2: War of the Chosen they drastically increased the menu animation speeds and the general feel of doing anything in the interface which satisfied me enough to stop working on the project.
+Then for ease of use by non-developers, I have provided a simple CLI windows application that can be used to convert from a binary to json, or a json to binary.
+
+  
+# Squaddie CLI
+A simple command line windows application that can be used to convert from a binary to json, or a json to binary.
+
+### Commands
+|Command| Function |
+|--|--|
+|-h, --help| List commands and usage instructions. |
+|-j, --toJson| Convert from binary input to json output. |
+|-b, --toBinary| Convert from json input to binary output. |
+|-p, --pretty| Whether to out JSON as pretty print. |
+|-i, --input| Provide the input file filepath. |
+|-o, --output| Provide the output file filepath (Will overwrite any existing file). |
+
+### Examples
+
+Converting from a binary to a JSON file. Also using -p to provide us pretty print (line breaks that aid human readability)
+
+    ./SquaddieCLI.exe -j -p -i myCoolPool.bin -o myCoolPool.json
+
+Converting from a JSON file to a binary file
+
+    ./SquaddieCLI.exe -b -i myCoolerPool.json -o woahThisLoadsIntoXCOM.bin
+
+# Squaddie C# Library
+*ICharacterPoolFileBuilder* provides the interface for all Character Pool file loaders. The ones included within the library are *CharacterPoolJsonBuilder* for converting to/from JSON and *CharacterPoolBinaryBuilder*  for converting to/from XCOM 2 Character Pool Binary files.
+
+A *CharacterPool* represents the collection of *Character*s and the name of the pool. From this you can access the *Characters* property to access the collection.
+
+A *Character* is pretty much a collection of *IProperty*. These can be viewed as a simple struct contain a Key and a Value. 
