@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Library.Property;
+using Squaddie.Properties;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using Squaddie.Properties;
 
 namespace Squaddie.Serialization
 {
@@ -38,52 +39,23 @@ namespace Squaddie.Serialization
             // Create the Header
             // This is magic number, it isn't used as far as we know
             data.AddRange(ByteConversionUtility.ByteInt(-1));
-            data.AddRange(factory.ByteProperty(factory.CreateProperty("CharacterPool", "ArrayProperty", pool.Count)));
+            data.AddRange(factory.ByteProperty(factory.CreateProperty("CharacterPool", ArrayProperty.TypeName, pool.Characters.Count)));
             // XCOM 2 expects that the filename in the data is the same as the actual filename
-            data.AddRange(factory.ByteProperty(factory.CreateProperty("PoolFileName", "StrProperty", string.Format("CharacterPool\\Importable\\{0}", filename))));
-            data.AddRange(factory.ByteProperty(factory.CreateProperty("None", "None", null)));
+            data.AddRange(factory.ByteProperty(factory.CreateProperty("PoolFileName", StringProperty.TypeName, string.Format("CharacterPool\\Importable\\{0}", filename))));
+            data.AddRange(factory.ByteProperty(factory.CreateProperty(NoneProperty.TypeName, NoneProperty.TypeName, null)));
             // The character count is placed here again
-            data.AddRange(ByteConversionUtility.ByteInt(pool.Count));
+            data.AddRange(ByteConversionUtility.ByteInt(pool.Characters.Count));
 
-            foreach (Character character in pool)
+            foreach (Character character in pool.Characters)
             {
-                foreach (IProperty characterProperty in character)
+                foreach (IProperty characterProperty in character.Properties)
                 {
                     data.AddRange(factory.ByteProperty(characterProperty));
                 }
-                data.AddRange(factory.ByteProperty(factory.CreateProperty("None", "None", null)));
+                data.AddRange(factory.ByteProperty(factory.CreateProperty(NoneProperty.TypeName, NoneProperty.TypeName, null)));
             }
 
             File.WriteAllBytes(filepath, data.ToArray());
-        }
-
-        public void SaveInDirectory(string directoryPath, CharacterPool pool)
-        {
-            PropertyFactory factory = new PropertyFactory();
-            List<byte> data = new List<byte>();
-
-            string filename = pool.Name + ".bin";
-
-            // Create the Header
-            // This is magic number, it isn't used as far as we know
-            data.AddRange(ByteConversionUtility.ByteInt(-1));
-            data.AddRange(factory.ByteProperty(factory.CreateProperty("CharacterPool", "ArrayProperty", pool.Count)));
-            // XCOM 2 expects that the filename in the data is the same as the actual filename
-            data.AddRange(factory.ByteProperty(factory.CreateProperty("PoolFileName", "StrProperty", string.Format("CharacterPool\\Importable\\{0}", filename))));
-            data.AddRange(factory.ByteProperty(factory.CreateProperty("None", "None", null)));
-            // The character count is placed here again
-            data.AddRange(ByteConversionUtility.ByteInt(pool.Count));
-
-            foreach (Character guy in pool)
-            {
-                foreach (IProperty guyProp in guy)
-                {
-                    data.AddRange(factory.ByteProperty(guyProp));
-                }
-                data.AddRange(factory.ByteProperty(factory.CreateProperty("None", "None", null)));
-            }
-
-            File.WriteAllBytes(Path.Combine(directoryPath, filename), data.ToArray());
         }
 
         private void ReadCharacters(CharacterPool pool)
@@ -92,7 +64,8 @@ namespace Squaddie.Serialization
 
             for (int index = 0; index < amountOfCharacters; index++)
             {
-                pool.Add(ReadCharacter());
+                Character character = ReadCharacter();
+                pool.Characters.Add(character);
             }
         }
 
@@ -102,23 +75,25 @@ namespace Squaddie.Serialization
             Character character = new Character();
 
             IProperty property = factory.ReadProperty(ref binaryPoolReader);
+            Console.WriteLine("Reading property... " + property.Name);
 
             if (property == null)
             {
                 throw new Exception("Character property was null");
             }
 
-            while (property.Name != "None")
+            while (property.Name != NoneProperty.TypeName)
             {
-                character.Add(property);
+                character.AddOrUpdateProperty(property);
+
                 property = factory.ReadProperty(ref binaryPoolReader);
+                Console.WriteLine("Reading property... " + property.Name);
 
                 if (property == null)
                 {
                     throw new Exception("Character property was null");
                 }
             }
-
             return character;
         }
 
@@ -143,16 +118,16 @@ namespace Squaddie.Serialization
             if (poolFileName.Name == "PoolFileName")
             {
                 //xcom has some issues if you change this from the format that it actually expects
-                string readName = (poolFileName).Value;
+                string readName = ((StringProperty)(poolFileName)).Value;
                 //we extract the actual filename from the filepath because we want to enable the possibility of renaming it
-                pool.Name = (readName.Substring(25, readName.Length - 29)); 
+                pool.Name = (readName.Substring(25, readName.Length - 29));
             }
             else
             {
                 throw new Exception("Incorrect Header: Did Not Read Expected Property PoolFileName!");
             }
 
-            if (factory.ReadProperty(ref binaryPoolReader).Name != "None")
+            if (factory.ReadProperty(ref binaryPoolReader).Name != NoneProperty.TypeName)
             {
                 throw new Exception("Incorrect Header: Did Not Read Expected Property None!");
             }
