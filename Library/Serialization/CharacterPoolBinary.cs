@@ -1,4 +1,5 @@
 ﻿using Library.Property;
+using Library.Serialization;
 using Squaddie.Properties;
 using System;
 using System.Collections.Generic;
@@ -39,10 +40,10 @@ namespace Squaddie.Serialization
             // Create the Header
             // This is magic number, it isn't used as far as we know
             data.AddRange(ByteConversionUtility.ByteInt(-1));
-            data.AddRange(factory.ByteProperty(factory.CreateProperty("CharacterPool", ArrayProperty.TypeName, pool.Characters.Count)));
+            data.AddRange((factory.CreateProperty("CharacterPool", ArrayProperty.TypeName, pool.Characters.Count)).ToBinary());
             // XCOM 2 expects that the filename in the data is the same as the actual filename
-            data.AddRange(factory.ByteProperty(factory.CreateProperty("PoolFileName", StringProperty.TypeName, string.Format("CharacterPool\\Importable\\{0}", filename))));
-            data.AddRange(factory.ByteProperty(factory.CreateProperty(NoneProperty.TypeName, NoneProperty.TypeName, null)));
+            data.AddRange((factory.CreateProperty("PoolFileName", StringProperty.TypeName, string.Format("CharacterPool\\Importable\\{0}", filename))).ToBinary());
+            data.AddRange((factory.CreateProperty(NoneProperty.TypeName, NoneProperty.TypeName, null)).ToBinary());
             // The character count is placed here again
             data.AddRange(ByteConversionUtility.ByteInt(pool.Characters.Count));
 
@@ -50,9 +51,9 @@ namespace Squaddie.Serialization
             {
                 foreach (IProperty characterProperty in character.Properties)
                 {
-                    data.AddRange(factory.ByteProperty(characterProperty));
+                    data.AddRange((characterProperty).ToBinary());
                 }
-                data.AddRange(factory.ByteProperty(factory.CreateProperty(NoneProperty.TypeName, NoneProperty.TypeName, null)));
+                data.AddRange((factory.CreateProperty(NoneProperty.TypeName, NoneProperty.TypeName, null)).ToBinary());
             }
 
             File.WriteAllBytes(filepath, data.ToArray());
@@ -75,8 +76,6 @@ namespace Squaddie.Serialization
             Character character = new Character();
 
             IProperty property = factory.ReadProperty(ref binaryPoolReader);
-            Console.WriteLine("Reading property... " + property.Name);
-
             if (property == null)
             {
                 throw new Exception("Character property was null");
@@ -85,9 +84,7 @@ namespace Squaddie.Serialization
             while (property.Name != NoneProperty.TypeName)
             {
                 character.AddOrUpdateProperty(property);
-
                 property = factory.ReadProperty(ref binaryPoolReader);
-                Console.WriteLine("Reading property... " + property.Name);
 
                 if (property == null)
                 {

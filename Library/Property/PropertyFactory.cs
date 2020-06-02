@@ -13,8 +13,6 @@ namespace Squaddie.Properties
         public IProperty CreateProperty(string name, string type, dynamic data)
         {
             IProperty property = null;
-            Console.WriteLine("Creating property " + name + " with type " + type);
-
 
             if (name != NoneProperty.TypeName)
             {
@@ -47,12 +45,6 @@ namespace Squaddie.Properties
                 property = new NoneProperty();
             }
             return property;
-        }
-
-        public byte[] ByteProperty(IProperty property)
-        {
-            Console.WriteLine("Byting... " + property.Name);
-            return property.ToBinary();
         }
 
         public IProperty ReadProperty(ref BinaryPoolReader binFile)

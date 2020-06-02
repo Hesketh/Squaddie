@@ -6,10 +6,8 @@ using System.Runtime.Serialization;
 
 namespace Squaddie
 {
-    [DataContract]
     public sealed class Character
     {
-        [DataMember]
         public List<IProperty> Properties { get; set; }
 
         public Character()
