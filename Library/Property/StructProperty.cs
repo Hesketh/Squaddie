@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Library.Property
+namespace Squaddie.Property
 {
     public class StructProperty : IProperty
     {

@@ -1,5 +1,5 @@
-﻿using Library.Property;
-using Library.Serialization;
+﻿using Squaddie.Property;
+using Squaddie.Serialization;
 using Squaddie.Serialization;
 using System;
 using System.Collections.Generic;

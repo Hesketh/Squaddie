@@ -1,5 +1,5 @@
-﻿using Library.Property;
-using Library.Serialization;
+﻿using Squaddie.Property;
+using Squaddie.Serialization;
 using Squaddie.Properties;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Squaddie.Serialization
 {
-    public sealed class CharacterPoolBinary
+    public sealed class CharacterPoolBinaryBuilder : ICharacterPoolFileBuilder
     {
         private BinaryPoolReader binaryPoolReader;
 

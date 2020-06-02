@@ -1,7 +1,7 @@
 ﻿using JsonSubTypes;
 using Newtonsoft.Json;
 
-namespace Library.Property
+namespace Squaddie.Property
 {
     [JsonConverter(typeof(JsonSubtypes), "Type")]
     [JsonSubtypes.KnownSubType(typeof(ArrayProperty), ArrayProperty.TypeName)]

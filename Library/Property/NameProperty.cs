@@ -1,4 +1,4 @@
-﻿namespace Library.Property
+﻿namespace Squaddie.Property
 {
     public class NameProperty : IProperty
     {

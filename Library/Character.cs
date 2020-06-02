@@ -1,4 +1,4 @@
-﻿using Library.Property;
+﻿using Squaddie.Property;
 using Squaddie.Properties;
 using System;
 using System.Collections.Generic;

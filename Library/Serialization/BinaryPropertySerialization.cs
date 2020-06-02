@@ -1,9 +1,9 @@
-﻿using Library.Property;
+﻿using Squaddie.Property;
 using Squaddie.Serialization;
 using System;
 using System.Collections.Generic;
 
-namespace Library.Serialization
+namespace Squaddie.Serialization
 {
     public static class BinaryPropertySerialization
     {
