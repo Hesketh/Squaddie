@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Squaddie
+namespace Squaddie.Serialization
 {
-    internal static class StructureReading
+    internal static class ByteConversionUtility
     {
         public static int ReadInt(MemoryStream data)
         {
@@ -26,7 +26,6 @@ namespace Squaddie
                 data.Read(buffer, 0, length);
 
                 return Encoding.GetEncoding("ISO-8859-1").GetString(buffer, 0, length - 1);
-                ;
             }
             else if (length == 0)
             {

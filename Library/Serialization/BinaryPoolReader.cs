@@ -2,11 +2,11 @@
 using System.IO;
 using System.Text;
 
-namespace Squaddie
+namespace Squaddie.Serialization
 {
     internal class BinaryPoolReader
     {
-        private MemoryStream DataStream;
+        private MemoryStream dataStream;
 
         public BinaryPoolReader(byte[] data)
         {
@@ -15,24 +15,24 @@ namespace Squaddie
 
         public void LoadData(byte[] data)
         {
-            DataStream = new MemoryStream(data);
-            DataStream.Seek(0, SeekOrigin.Begin);
+            dataStream = new MemoryStream(data);
+            dataStream.Seek(0, SeekOrigin.Begin);
         }
 
         public void ClearData()
         {
-            DataStream = null;
+            dataStream = null;
         }
 
         public bool EndOfFile()
         {
-            return DataStream.Position == DataStream.Length;
+            return dataStream.Position == dataStream.Length;
         }
 
         public byte[] ReadBytes(int amountOfBytes)
         {
             byte[] data = new byte[amountOfBytes];
-            DataStream.Read(data, 0, amountOfBytes);
+            dataStream.Read(data, 0, amountOfBytes);
 
             return data;
         }
@@ -40,7 +40,7 @@ namespace Squaddie
         public int ReadInt()
         {
             byte[] buffer = new byte[4];
-            DataStream.Read(buffer, 0, 4);
+            dataStream.Read(buffer, 0, 4);
 
             return BitConverter.ToInt32(buffer, 0);
         }
@@ -48,7 +48,7 @@ namespace Squaddie
         public bool ReadBool()
         {
             byte[] buffer = new byte[1];
-            DataStream.Read(buffer, 0, 1);
+            dataStream.Read(buffer, 0, 1);
 
             return BitConverter.ToBoolean(buffer, 0);
         }
@@ -60,7 +60,7 @@ namespace Squaddie
             if (length > 0)
             {
                 byte[] buffer = new byte[length];
-                DataStream.Read(buffer, 0, length);
+                dataStream.Read(buffer, 0, length);
 
                 return Encoding.GetEncoding("ISO-8859-1").GetString(buffer, 0, length - 1);
             }
