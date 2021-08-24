@@ -30,6 +30,15 @@ Converting from a JSON file to a binary file
 
     ./SquaddieCLI.exe -b -i myCoolerPool.json -o woahThisLoadsIntoXCOM.bin
 
+Merge multiple character pool files in a directory into a single character pool (In binary format)
+
+    ./SquaddieCLI.exe -m -i .\Importable -o Merged.bin -b
+
+Merge multiple character pool files in a directory into a single character pool (In json format)
+
+    ./SquaddieCLI.exe -m -i .\Importable -o Merged.json -j -p
+
+
 # Squaddie C# Library
 *ICharacterPoolFileBuilder* provides the interface for all Character Pool file loaders. The ones included within the library are *CharacterPoolJsonBuilder* for converting to/from JSON and *CharacterPoolBinaryBuilder*  for converting to/from XCOM 2 Character Pool Binary files.
 
