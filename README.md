@@ -16,7 +16,7 @@ A simple command line windows application that can be used to convert from a bin
 |-h, --help| List commands and usage instructions. |
 |-j, --toJson| Convert from binary input to json output. |
 |-b, --toBinary| Convert from json input to binary output. |
-|-m, --merge| Whether to out JSON as pretty print. |
+|-m, --merge| Merge multiple pools of the same kind into a single pool. You should also specify the type with -b or -j. |
 |-p, --pretty| Whether to out JSON as pretty print. |
 |-i, --input| Provide the input file filepath. |
 |-o, --output| Provide the output file filepath (Will overwrite any existing file). |
